@@ -1,4 +1,5 @@
 import random 
+import Board
 
 #first define a function that can split the list into n equal, random groups
 def partition (list_in, n):
@@ -26,4 +27,6 @@ def eval_genomes(pop, config):
 
 lst = random.sample(range(256), 256)
 eval_genomes(lst, 0)
+
+Board.main()
 

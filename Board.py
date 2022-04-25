@@ -98,7 +98,7 @@ PROPERTY_ID = [-1, 0, -1, 1, -1, -1, 2, -1, 2, 3,
                -1, 8, -1, 8,  9, -1,10, 10,-1,11,
                -1, 12,12,-1, 13,-1, -1, 14,-1,15] #gives the property ID, those with the same attributes have the same ID
 
-
+FITNESS = [0, 0, 0, 0]
 
 
 
@@ -621,6 +621,24 @@ def pick_chest_card():
                 hotels += 1
         
         payment(current_turn, houses * 40 + hotels * 115)
+        
+
+
+def fitness_for_draw():
+    #basically sell all player's assets, then rank players based on total assets
+    total_assets = [0, 0, 0, 0]
+    for i in range(PLAYER_COUNT):
+        assets = 0
+        props = properties(i)
+        for prop in props:
+            assets += COSTS[prop]
+        
+        assets += players[i].money
+        total_assets[i] = assets
+    
+    fitness = [sorted(total_assets).index(x) for x in total_assets]
+    
+    return fitness
 
 
 
@@ -872,13 +890,9 @@ def land_on_tile():
         
         elif not MORTGAGED[pos]:
             #NEED TO DEFINE PAYMENT TO PLAYER, NEEDS TO INCLUDE STUFF ABOUT IF A PLAYER DEFAULTS
-            try:
+                            
+            payment(current_turn, PROPERTY_PENALTIES[PROPERTY_ID[pos]][HOUSES[pos]], property_owner)
                 
-                payment(current_turn, PROPERTY_PENALTIES[PROPERTY_ID[pos]][HOUSES[pos]], property_owner)
-            
-            except:
-                print(f"Too many houses: {HOUSES[pos]} houses")
-    
     elif tile.name == "TRAIN":
         
         train_owner = OWNER[pos]
@@ -1064,9 +1078,7 @@ def pre_turn():
         network.clear_choices()
         
         decision = min(max_to_sell, decision)
-        
-        #print(f"{max_to_sell} to sell, chose to sell {decision}")
-        
+                
         if decision > 0:
             sell_houses(sets[i], decision)
             players[current_turn].money +=  0.5 * decision * HOUSE_PRICE[PROPERTY_ID[SET[sets[i]][0]]] #sell the house for half value
@@ -1110,7 +1122,6 @@ def pre_turn():
         if decision > 0:
             buy_houses(sets[i], decision)
             payment(current_turn, decision * HOUSE_PRICE[PROPERTY_ID[SET[sets[i]][0]]]) 
-            #print(f"{decision} bought at {sets[i]}, total houses now {HOUSES[SET[sets[i]][0]]}")        
     
     #finally we implement the trading method
     trading()
@@ -1246,6 +1257,7 @@ def end_turn(outcome):
     global remaining
     global current_turn
     global count
+    global FITNESS
     
     if outcome:
         increment()
@@ -1255,13 +1267,14 @@ def end_turn(outcome):
             count2 += 1
         
         if remaining <= 1:
-            print(network.inputs)
             players[current_turn].place = remaining
+            for i in range(PLAYER_COUNT):
+                FITNESS[i] = 4 - players[i].place
             return current_turn
     
     count += 1
     if count >= STALEMATE:
-        print(network.inputs)
+        FITNESS = fitness_for_draw()
         return 10 #10 will be the draw result
     
     return -1
@@ -1273,23 +1286,12 @@ def main():
     
     while outcome == -1:        
         outcome = turn()
-
     
-    if outcome == 0:
-        print("0")
+    print(FITNESS)
     
-    elif outcome == 1:
-        print("1")
-      
-    elif outcome == 2:
-        print("2")
     
-    elif outcome == 3:
-        print("3")
-    
-    elif outcome == 10:
+    if outcome == 10:
         print("Draw")
-
 
 
 if __name__ == "__main__":
