@@ -1,9 +1,129 @@
-from MyEnums import Tile, Cards
+from MyEnums import *
+from settings import *
 from Player import Player
 from NetInputs import NetInputs 
 import random
 import numpy as np
 import math
+import os
+import neat
+
+import time 
+
+time1 = time.time()
+
+"""
+Big change here...
+
+"""
+
+
+class NetworkPlayer:
+    
+    def __init__(self, genome):
+        
+        self.genome = genome #this will be a genome defined by neat-python
+        
+        #aside from the genome, everything else should be the same...
+        
+        self.pos = 0
+        self.money = STARTING_MONEY
+        self.in_jail = False
+        self.turns_in_jail = 0
+        self.jail_card = 0
+        self.doubles = 0
+        self.properties = [] #there will be two records of owning properties, one in the board and one from the player 
+        self.retired = False
+        self.place = 0
+    
+    def buy_decision(self, price):
+        
+        output = self.genome.activate(network.inputs)
+        
+        if output[0] > 0.5:
+            return buy_decision.BUY
+        
+        return buy_decision.AUCTION
+    
+    def jail_decision(self):
+        
+        output = self.genome.activate(network.inputs)
+        
+        if output[1] < 0.333:
+            
+            return jail_decision.ROLL
+        
+        elif output[1] < 0.666:
+            
+            return jail_decision.CARD
+        
+        return jail_decision.PAY
+    
+    def mortgage_decision(self, index):
+        
+        output = self.genome.activate(network.inputs)
+        
+        if output[2] > 0.5:
+            
+            return decision.YES
+        
+        return decision.NO
+    
+    def accept_trade(self):
+        
+        output = self.genome.activate(network.inputs)
+        
+        if output[3] > 0.5:
+            
+            return decision.YES
+        
+        return decision.NO
+    
+    def offer_trade(self):
+        
+        output = self.genome.activate(network.inputs)
+        
+        if output[4] > 0.5:
+            
+            return decision.YES
+        
+        return decision.NO
+    
+    def decide_sell_house(self, index):
+        
+        output = self.genome.activate(network.inputs)
+        houses = 15 * output[5]
+        
+        return int(houses)
+    
+    def decide_build_house(self, index):
+        
+        output = self.genome.activate(network.inputs)
+        houses = output[6] * 15
+        
+        return int(houses)
+    
+    def decide_bid(self, index):
+        
+        output = self.genome.activate(network.inputs)
+        offer = 5000 * output[7]
+        
+        return offer
+    
+    def decide_unmortgage(self, index):
+        
+        output = self.genome.activate(network.inputs)
+        
+        if output[8] > 0.5:
+            
+            return decision.YES
+        
+        return decision.NO
+        
+
+
+
+
 
 
 #---------------Board constants---------------#
@@ -14,7 +134,7 @@ BANK_INDEX = -1
 GO_BONUS = 200
 
 BOARD_LENGTH = 40
-STALEMATE = 1000
+STALEMATE = 500
 
 
 JAIL_INDEX = 10
@@ -129,11 +249,43 @@ players = []
 
 remaining = PLAYER_COUNT
 
+
+"""
+New bits here trying to connect NetworkPlayer, so getting rid of this bit for the time being
+
+
 for i in range(PLAYER_COUNT):
     players.append(Player(f"Player {i}"))
     network.set_position(i, players[i].pos)
     network.set_money(i, players[i].money)
     
+    
+"""    
+
+#---------------NEW BIT WITH NETWORKS AND GENOMES---------------#
+
+
+
+#I think this is where the board should have its run method?
+#Then we can just put the genomes in here and run the rest as usual
+
+local_dir = os.path.dirname(__file__)
+config_path = os.path.join(local_dir, 'config-monopoly')
+
+config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
+
+p = neat.Population(config)
+
+for genome_id, genome in p.population.items():
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+    players.append(NetworkPlayer(net))
+    network.set_position(genome_id - 1, players[genome_id - 1].pos)
+    network.set_money(genome_id - 1, players[genome_id - 1].money)
+
+
+
 
 chance = []
 chest = []
@@ -771,7 +923,7 @@ def trading():
         
         #here you clear the whole trade selection
         network.clear_choices()
-        payment(current_turn, difference, trader)
+        payment(current_turn, difference, trader_id)
     
     
 def auction(property_id):
@@ -1296,4 +1448,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print(time.time() - time1)
 

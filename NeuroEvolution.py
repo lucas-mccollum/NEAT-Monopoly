@@ -1,4 +1,3 @@
-import random 
 import Board
 
 #first define a function that can split the list into n equal, random groups
@@ -12,21 +11,38 @@ def eval_genomes(pop, config):
     n = 0
     while len(current_pool) > 1: 
         
-        print(current_pool)
+        #for the moment, we're pretending we have a run method in Board
+        
         
         no_groups = int(len(current_pool) / 4) #find how many groups we have to split our population into
         groups = partition(current_pool, no_groups) #randomise and split
-        #THIS IS WHERE YOU RUN THE GAMES, sort them into ascending order for each group
+        
+        for group in groups:
+            fitness = Board.run(group)
+            for genome_id, genome in group:
+                genome.fitness = n ** 2 
+        
         new_group = [i[0] for i in groups]
         current_pool = new_group
         n += 1
     print(current_pool)
        
 
+local_dir = os.path.dirname(__file__)
+config_path = os.path.join(local_dir, 'config-monopoly')
+
+config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
+
+p = neat.Population(config)
+
+print(p.population)
+
+"""
 
 
 lst = random.sample(range(256), 256)
 eval_genomes(lst, 0)
 
-Board.main()
-
+"""

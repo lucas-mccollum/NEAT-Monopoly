@@ -3,9 +3,12 @@ import os
 from settings import *
 from MyEnums import *
 
+
 """
 I **think** we can just use network.inputs in the functions here, and when used in Board
 it will automatically use the one from that???? Let's hope that's the case...
+
+That was not the case. 
 
 In which case, I don't think NetworkPlayer needs to inherit from Player...
 
@@ -14,6 +17,7 @@ In which case, I don't think NetworkPlayer needs to inherit from Player...
 class NetworkPlayer:
     
     def __init__(self, genome):
+        
         self.genome = genome #this will be a genome defined by neat-python
         
         #aside from the genome, everything else should be the same...
@@ -88,7 +92,7 @@ class NetworkPlayer:
         
         return houses
     
-    def decide_buy_house(self, index):
+    def decide_build_house(self, index):
         
         output = self.genome.activate(network.inputs)
         houses = output[6] * 15
@@ -121,12 +125,7 @@ class NetworkPlayer:
 
 
 
-
-
-
-
-
-
+"""
 
 local_dir = os.path.dirname(__file__)
 config_path = os.path.join(local_dir, 'config-monopoly')
@@ -144,3 +143,6 @@ def test(g, c):
         print(net.activate([0] * 127))
         
 test(p, config)
+
+
+"""
