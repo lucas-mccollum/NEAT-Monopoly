@@ -266,6 +266,9 @@ for i in range(PLAYER_COUNT):
 
 
 
+"""
+
+
 #I think this is where the board should have its run method?
 #Then we can just put the genomes in here and run the rest as usual
 
@@ -281,10 +284,15 @@ p = neat.Population(config)
 for genome_id, genome in p.population.items():
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     players.append(NetworkPlayer(net))
-    network.set_position(genome_id - 1, players[genome_id - 1].pos)
+    network.set_position(genome_id - 1, players[genome_id - 1].pos) #when doing this later, I think we'll have to do ((genome_id -1) % 4)
     network.set_money(genome_id - 1, players[genome_id - 1].money)
 
 
+
+NEW NOTE - this is being added to the end of the program to see if we can run the whole thing at once
+
+
+"""
 
 
 chance = []
@@ -1433,6 +1441,9 @@ def end_turn(outcome):
 
 
 
+"""
+
+
 def main():
     outcome = -1
     
@@ -1449,4 +1460,62 @@ def main():
 if __name__ == "__main__":
     main()
     print(time.time() - time1)
+    
+    
+"""
+
+
+def run_game(pop, config): #renamed so as to not be confused with neat.Population.run()
+    #you need to have defined the population before so that pop is the networks themselves, not the population object, i.e. takes list(pop.population.items())
+     
+    players.clear()
+    
+    for i in range(len(pop)):
+        #I think we're going to have to fuck around with the genome ids here, hopefully doesnt matter...
+        #so instead of using genome_id, we just use the number of objects in the list so we iterate through with i, means we don't have to worry about the indexing
+        
+        net = neat.nn.FeedForwardNetwork.create(pop[i][1], config)
+        players.append(NetworkPlayer(net))
+        network.set_position(i, players[i].pos) #when doing this later, I think we'll have to do ((genome_id -1) % 4)
+        network.set_money(i, players[i].money)
+    
+    
+    outcome = -1
+    
+    while outcome == -1:        
+        outcome = turn()
+    
+    
+    if outcome == 10:
+        print("Draw")
+        
+    return FITNESS
+
+
+
+if __name__ == "__main__":
+
+
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, 'config-monopoly')
+    
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                             neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                             config_path)
+    
+    
+    
+    p = neat.Population(config)
+    test = list(p.population.items())
+    
+    print(run_game(test, config))
+    
+    print(time.time() - time1)
+
+
+
+
+
+
+    
 

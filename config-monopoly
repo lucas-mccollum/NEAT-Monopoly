@@ -1,9 +1,9 @@
 #--- First attempt at running Monopoly with a NN ---#
 
 [NEAT]
-fitness_criterion     = max
-fitness_threshold     = 3.9
-pop_size              = 4
+fitness_criterion     = mean
+fitness_threshold     = 25
+pop_size              = 64
 reset_on_extinction   = False
 
 [DefaultGenome]
