@@ -4,23 +4,12 @@ from settings import *
 from MyEnums import *
 
 
-"""
-I **think** we can just use network.inputs in the functions here, and when used in Board
-it will automatically use the one from that???? Let's hope that's the case...
-
-That was not the case. 
-
-In which case, I don't think NetworkPlayer needs to inherit from Player...
-
-"""
-
 class NetworkPlayer:
     
     def __init__(self, genome):
         
         self.genome = genome #this will be a genome defined by neat-python
-        
-        #aside from the genome, everything else should be the same...
+
         
         self.pos = 0
         self.money = STARTING_MONEY

@@ -134,7 +134,7 @@ BANK_INDEX = -1
 GO_BONUS = 200
 
 BOARD_LENGTH = 40
-STALEMATE = 500
+STALEMATE = 1000
 
 
 JAIL_INDEX = 10
@@ -1465,10 +1465,34 @@ if __name__ == "__main__":
 """
 
 
+def reset_board():
+    global MORTGAGED
+    global OWNER
+    global HOUSES
+    global ORIGINAL
+    global count
+    global remaining
+    global FITNESS
+    global last_roll
+    
+    
+    
+    MORTGAGED = [False] * 40
+    OWNER = [-1] * 40
+    HOUSES = [0] * 40
+    ORIGINAL = [-1] * 40
+    
+    count = 0
+    remaining = 4
+    FITNESS = [0, 0, 0, 0]
+    last_roll = 0
+
+
 def run_game(pop, config): #renamed so as to not be confused with neat.Population.run()
     #you need to have defined the population before so that pop is the networks themselves, not the population object, i.e. takes list(pop.population.items())
      
     players.clear()
+    reset_board()
     
     for i in range(len(pop)):
         #I think we're going to have to fuck around with the genome ids here, hopefully doesnt matter...
@@ -1486,8 +1510,12 @@ def run_game(pop, config): #renamed so as to not be confused with neat.Populatio
         outcome = turn()
     
     
+    
     if outcome == 10:
         print("Draw")
+    
+    
+    network.reset()
         
     return FITNESS
 
